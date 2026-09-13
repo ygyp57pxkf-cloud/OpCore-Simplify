@@ -107,28 +107,25 @@ class OCPE:
             else:
                 return path, data
             
-    def show_oclp_warning(self):
+    def show_oclp_warning(self, macos_version):
+        is_tahoe = self.u.parse_darwin_version(macos_version) >= self.u.parse_darwin_version("25.0.0")
+
         while True:
             self.u.head("OpenCore Legacy Patcher Warning")
             print("")
-            print("1. OpenCore Legacy Patcher is the only solution to enable dropped GPU and Broadcom WiFi")
-            print("   support in newer macOS versions, as well as to bring back AppleHDA for macOS Tahoe 26.")
+            print("\033[1;96mWhy it is required:\033[0m")
+            print("- Restores compatibility for GPUs and Broadcom WiFi.")
+            if is_tahoe:
+                print("- Rolls back AppleHDA to restore audio support through AppleALC.")
             print("")
-            print("2. OpenCore Legacy Patcher disables macOS security features including SIP and AMFI, which may")
-            print("   lead to issues such as requiring full installers for updates, application crashes, and")
-            print("   system instability.")
+            print("\033[1;93mRisks and limitations:\033[0m")
+            print("- Disables macOS security features, including SIP and AMFI.")
+            print("- macOS updates require full installers, apps may crash or the system may become unstable.")
+            print("- OpenCore Legacy Patcher does not officially support Hackintosh systems.")
             print("")
-            print("3. OpenCore Legacy Patcher is not officially supported for Hackintosh community.")
+            print("\033[1;91mReview these risks before continuing.\033[0m")
             print("")
-            print("\033[1;91mImportant:\033[0m")
-            print("Please consider these risks carefully before proceeding.")
-            print("")
-            print("\033[1;96mSupport for macOS Tahoe 26:\033[0m")
-            print("To patch macOS Tahoe 26, you must download OpenCore-Patcher 3.0.0 or newer from")
-            print("my repository: \033[4mlzhoang2801/OpenCore-Legacy-Patcher\033[0m on GitHub.")
-            print("Older or official Dortania releases are NOT supported for Tahoe 26.")
-            print("")
-            option = self.u.request_input("Do you want to continue with OpenCore Legacy Patcher? (yes/No): ").strip().lower()
+            option = self.u.request_input("Continue with OpenCore Legacy Patcher? (yes/No): ").strip().lower()
             if option == "yes":
                 return True
             elif option == "no":
@@ -434,7 +431,7 @@ class OCPE:
                 smbios_model = self.s.customize_smbios_model(customized_hardware, smbios_model, macos_version)
                 self.s.smbios_specific_options(customized_hardware, smbios_model, macos_version, self.ac.patches, self.k)
             elif option == "6":
-                if needs_oclp and not self.show_oclp_warning():
+                if needs_oclp and not self.show_oclp_warning(macos_version):
                     macos_version = self.select_macos_version(hardware_report, native_macos_version, ocl_patched_macos_version)
                     customized_hardware, disabled_devices, needs_oclp = self.h.hardware_customization(hardware_report, macos_version)
                     smbios_model = self.s.select_smbios_model(customized_hardware, macos_version)
